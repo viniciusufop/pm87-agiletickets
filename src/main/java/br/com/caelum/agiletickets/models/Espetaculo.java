@@ -2,6 +2,7 @@ package br.com.caelum.agiletickets.models;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -130,4 +131,54 @@ public class Espetaculo {
        else return false;
    }
 
+	public BigDecimal calcularPreco(Sessao sessao) {
+		BigDecimal preco;
+		preco = calcularPrecoPorTipoEspetaculo(sessao);
+		return preco;
+	}
+
+	private BigDecimal calcularPrecoPorTipoEspetaculo(Sessao sessao) {
+		BigDecimal preco;
+		TipoDeEspetaculo tipo = getTipo();
+		if(tipo.equals(TipoDeEspetaculo.CINEMA) || tipo.equals(TipoDeEspetaculo.SHOW)) {
+			preco = sessao.getEspetaculo().calculaPrecoCinemaShow(sessao);
+		} else if(tipo.equals(TipoDeEspetaculo.BALLET) || tipo.equals(TipoDeEspetaculo.ORQUESTRA)) {
+			preco = sessao.getEspetaculo().calculaPrecoBalletOrquestra(sessao);
+		} else {
+			//nao aplica aumento para teatro (quem vai é pobretão)
+			preco = sessao.getPreco();
+		}
+		return preco;
+	}
+
+	private BigDecimal calculaPrecoCinemaShow(Sessao sessao) {
+		Integer totalIngressos = sessao.getTotalIngressos();
+		Integer ingressosReservados = sessao.getIngressosReservados(); 
+		BigDecimal precoSessao = sessao.getPreco();
+		BigDecimal preco;
+		//quando estiver acabando os ingressos... 
+		if((totalIngressos - ingressosReservados) / totalIngressos.doubleValue() <= 0.05) { 
+			preco = precoSessao.add(precoSessao.multiply(BigDecimal.valueOf(0.10)));
+		} else {
+			preco = precoSessao;
+		}
+		return preco;
+	}
+	
+	private BigDecimal calculaPrecoBalletOrquestra(Sessao sessao) {
+		Integer totalIngressos = sessao.getTotalIngressos();
+		Integer ingressosReservados = sessao.getIngressosReservados(); 
+		BigDecimal precoSessao = sessao.getPreco();
+		BigDecimal preco;
+		if((totalIngressos - ingressosReservados) / totalIngressos.doubleValue() <= 0.50) { 
+			preco = precoSessao.add(precoSessao.multiply(BigDecimal.valueOf(0.20)));
+		} else {
+			preco = precoSessao;
+		}
+		
+		if(sessao.getDuracaoEmMinutos() > 60){
+			preco = preco.add(precoSessao.multiply(BigDecimal.valueOf(0.10)));
+		}
+		return preco;
+	}
 }
