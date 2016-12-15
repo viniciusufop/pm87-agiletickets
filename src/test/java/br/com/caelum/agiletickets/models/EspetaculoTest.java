@@ -117,8 +117,7 @@ public class EspetaculoTest {
 		LocalTime horario = new LocalTime(17, 0);
 		List<Sessao> sessoes = iveteEspetaculo.criaSessoes(dataInicio, dataFim, horario, Periodicidade.DIARIA);
 		
-		//Assert.assertEquals(31,sessoes.size());
-		Assert.assertEquals(30,sessoes.size());
+		Assert.assertEquals(31,sessoes.size());
 	}
 	
 }
